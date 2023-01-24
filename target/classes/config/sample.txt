@@ -1,0 +1,63 @@
+@Override
+    public void afterScenario(ScenarioRuntime sr) {
+        int stepFailedIndex=0;
+
+        if (sr.result.isFailed())
+        {
+            Status = "Failed";
+            stepFailedIndex = sr.result.getFailedStep().getStep().getIndex();
+        } else
+        {
+            Status = "Passed";
+        }
+
+        if (sr.result.getError() == null)
+        {
+            Error = "No Error";
+        } else
+        {
+            Error = sr.result.getError().toString();
+        }
+
+        test = ExtentManager.getInstance().createTest("<b>Scenario : </b>" + sr.scenario.getName());
+        Tags = "";
+
+        if (sr.result.getScenario().getTags() == null) {
+            Tags = "No Tags";
+        } else {
+            for (int z = 0; z < sr.result.getScenario().getTags().size(); z++) {
+
+                Tags = Tags + sr.result.getScenario().getTags().get(z) + ",";
+            }
+            Tags = Tags.substring(0, Tags.length() - 1);
+        }
+
+        double durationRuntime = (double)(sr.result.getEndTime()-sr.result.getStartTime())/1000;
+        test.info("<div style=\"color: DarkKhaki\"><b>Duration : "+durationRuntime+" secs</div>");
+        test.info("<div style=\"color: Orange\"><b>Tags : </b>" + Tags+"</div>");
+        test.info("<div style=\"color: Indigo\"><b>Feature : </b>" + sr.scenario.getFeature().getName() +"</div>");
+        List<Step> stepsBg = sr.result.getScenario().getBackgroundSteps();
+        test.info("<div style=\"color: Purple\"><b>Background :</b></div>");
+        for(Step step:stepsBg)
+        {
+                test.info("<div style=\"color: SteelBlue\">" + step+"</div>");
+        }
+
+
+        List<Step> steps = sr.result.getScenario().getSteps();
+        test.info("<div style=\"color: Purple\"><b>Scenario :</b></div>");
+        int ctr = 0;
+        for(Step step:steps)
+        {
+            if(Status == "Failed" && ctr==stepFailedIndex)
+            {
+                test.info("<div style=\"color: Red\"><b>" + step + "</b></div>");
+                break;
+            }
+            test.info("<div style=\"color: SteelBlue\">" + step + "</div>");
+            ctr++;
+        }
+        if (Status == "Failed") {
+            test.fail("<div style=\"color: Red\"><b>Error : </b>" + Error +"</div>"+"    "+stepFailedIndex);
+        }
+    }
